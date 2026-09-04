@@ -1,0 +1,11 @@
+{
+  "name": "PIF-PAF LASS",
+  "short_name": "PIF-PAF LASS",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#101010",
+  "theme_color": "#c40000",
+  "lang": "pl",
+  "icons": [],
+  "scope": "./"
+}

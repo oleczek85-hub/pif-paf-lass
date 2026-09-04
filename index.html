@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#c40000">
+<title>PIF-PAF LASS</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#101010;color:#eee;font-family:Arial,sans-serif}
+header{background:#c40000;padding:18px 16px 14px;text-align:center;position:sticky;top:0;z-index:5}
+header h1{margin:0;font-size:24px}header p{margin:5px 0 0;font-size:13px}
+nav{display:flex;gap:5px;padding:8px;background:#181818;position:sticky;top:69px;z-index:4;overflow:auto}
+nav button{border:0;background:#292929;color:#ddd;padding:10px 12px;border-radius:9px;white-space:nowrap;font-weight:bold}
+nav button.active{background:#c40000;color:#fff}
+main{max-width:720px;margin:auto;padding:12px}
+.month{font-size:20px;margin:18px 3px 8px;border-bottom:1px solid #333;padding-bottom:6px}
+.card{background:#1c1c1c;border:1px solid #303030;border-radius:13px;padding:13px;margin:8px 0}
+.date{font-weight:bold;font-size:15px}.type{margin-top:4px;font-weight:bold}
+.red{color:#ff3b30}.blue{color:#58a6ff}.gray{color:#aaa}.gold{color:#ffd166}
+.hosts{margin-top:10px;padding:9px;background:#111;border-radius:9px}
+.hosts select{width:48%;background:#292929;color:#fff;border:1px solid #444;border-radius:7px;padding:9px}
+.actions{display:flex;gap:7px;margin-top:9px;flex-wrap:wrap}
+.actions button{border:0;border-radius:8px;padding:9px 11px;font-weight:bold}
+.save{background:#c40000;color:white}.rem{background:#333;color:#fff}.cant{background:#555;color:#fff}
+.stat{background:#1c1c1c;border-radius:12px;padding:12px;margin:8px 0}
+.row{display:flex;justify-content:space-between;border-bottom:1px solid #333;padding:8px 0}.row:last-child{border:0}
+.empty{color:#aaa;text-align:center;padding:30px 10px}
+.notice{background:#241d00;border:1px solid #5d4b00;padding:11px;border-radius:10px;margin:10px 0;font-size:13px}
+</style>
+</head>
+<body>
+<header><h1>🎯 PIF-PAF LASS</h1><p>Harmonogram sezonu 2026/2027</p></header>
+<nav id="nav">
+<button data-tab="all">Wszystko</button>
+<button data-tab="pif">🔴 PIF-PAF</button>
+<button data-tab="mine">👤 Mój dyżur</button>
+<button data-tab="stats">📊 Statystyki</button>
+<button data-tab="rem">🔔 Przypomnienia</button>
+</nav>
+<main id="app"></main>
+<script>
+const people=["Olek","Michał","Konrad","Klaudiusz","Krystian","Dominik","Piotr"];
+const schedule=[
+["08.09.2026","🔵","LLSD","Turniej 1"],["15.09.2026","🔴","PIF-PAF","Turniej 1, Cykl I"],
+["22.09.2026","⚪","WOLNY WTOREK",""],["29.09.2026","🔴","PIF-PAF","Turniej 2, Cykl I"],
+["06.10.2026","🔵","LLSD","Turniej 2"],["13.10.2026","🔴","PIF-PAF","Turniej 3, Cykl I"],
+["20.10.2026","🔵","LLSD","Turniej 3"],["27.10.2026","🔴","PIF-PAF","Turniej 4, Cykl I"],
+["03.11.2026","⚪","WOLNY WTOREK",""],["10.11.2026","🔴","PIF-PAF","Turniej 5 – Finał Cyklu I"],
+["17.11.2026","🔵","LLSD","Turniej 4"],["24.11.2026","🔴","PIF-PAF","Turniej 1, Cykl II"],
+["01.12.2026","🔵","LLSD","Turniej 5"],["08.12.2026","🔴","PIF-PAF","Turniej 2, Cykl II"],
+["15.12.2026","⚪","WOLNY WTOREK",""],["22.12.2026","❌","PRZERWA ŚWIĄTECZNA",""],
+["29.12.2026","🔵","LLSD","Turniej 6"],["05.01.2027","🔴","PIF-PAF","Turniej 3, Cykl II"],
+["08-10.01.2027","🏆","MISTRZOSTWA LESZNA I PUCHAR POLSKI",""],["12.01.2027","🔵","LLSD","Turniej 7"],
+["19.01.2027","🔴","PIF-PAF","Turniej 4, Cykl II"],["26.01.2027","⚪","WOLNY WTOREK",""],
+["02.02.2027","🔴","PIF-PAF","Turniej 5 – Finał Cyklu II"],["09.02.2027","🔵","LLSD","Turniej 8"],
+["16.02.2027","🔴","PIF-PAF","Turniej 1, Cykl III"],["23.02.2027","🔵","LLSD","Turniej 9"],
+["02.03.2027","🔴","PIF-PAF","Turniej 2, Cykl III"],["09.03.2027","⚪","WOLNY WTOREK",""],
+["16.03.2027","🔴","PIF-PAF","Turniej 3, Cykl III"],["23.03.2027","🔵","LLSD","Turniej 10"],
+["30.03.2027","🔴","PIF-PAF","Turniej 4, Cykl III"],["06.04.2027","🔵","LLSD","Turniej 11"],
+["13.04.2027","🔴","PIF-PAF","Turniej 5 – Finał Cyklu III"],["20.04.2027","⚪","WOLNY WTOREK",""],
+["27.04.2027","🔴","PIF-PAF","Turniej 1, Cykl IV"],["04.05.2027","🔵","LLSD","Turniej 12"],
+["11.05.2027","🔴","PIF-PAF","Turniej 2, Cykl IV"],["18.05.2027","🔵","LLSD","Turniej 13"],
+["25.05.2027","🔴","PIF-PAF","Turniej 3, Cykl IV"],["01.06.2027","⚪","WOLNY WTOREK",""],
+["08.06.2027","🔴","PIF-PAF","Turniej 4, Cykl IV"],["15.06.2027","🔵","LLSD","Turniej 14"],
+["22.06.2027","🔴","PIF-PAF","Turniej 5 – WIELKI FINAŁ SEZONU"],
+["29.06.2027","🔵","LLSD","Finał – grają tylko zawodnicy z historii ligi"]
+];
+const pairs=[
+["Olek","Michał"],["Konrad","Klaudiusz"],["Krystian","Dominik"],["Olek","Konrad"],
+["Michał","Krystian"],["Klaudiusz","Dominik"],["Olek","Krystian"],["Michał","Klaudiusz"],
+["Konrad","Dominik"],["Olek","Klaudiusz"],["Michał","Dominik"],["Konrad","Krystian"],
+["Olek","Dominik"],["Michał","Konrad"],["Klaudiusz","Krystian"],["Olek","Michał"],
+["Konrad","Klaudiusz"],["Krystian","Dominik"],["Olek","Konrad"],["Michał","Krystian"]
+];
+const key="pifpaf_v5_state";
+let state=JSON.parse(localStorage.getItem(key)||'{"assign":{},"reminders":{}}');
+let tab="all", me=localStorage.getItem("pifpaf_me")||"";
+function saveState(){localStorage.setItem(key,JSON.stringify(state));}
+function pifItems(){return schedule.map((x,i)=>({x,i})).filter(o=>o.x[1]==="🔴");}
+function isPif(x){return x[1]==="🔴";}
+function monthName(s){
+ const m=s.slice(3,5); const names=["","STYCZEŃ","LUTY","MARZEC","KWIECIEŃ","MAJ","CZERWIEC","LIPIEC","SIERPIEŃ","WRZESIEŃ","PAŹDZIERNIK","LISTOPAD","GRUDZIEŃ"];
+ return names[+m]||"";
+}
+function selectHtml(value,disabled){
+ let h='<select class="hostSelect" '+(disabled?'disabled':'')+'>';
+ h+='<option value="">— wybierz —</option>';
+ people.forEach(p=>h+='<option '+(value===p?'selected':'')+'>'+p+'</option>');
+ return h+'</select>';
+}
+function renderCard(item,i){
+ const [date,icon,title,sub]=item, p=isPif(item), a=state.assign[i]||["",""];
+ if(tab==="pif"&&!p)return "";
+ if(tab==="mine" && !(a[0]===me||a[1]===me))return "";
+ let cls=p?"red":icon==="🔵"?"blue":icon==="🏆"?"gold":"gray";
+ let html='<div class="card"><div class="date">'+date+'</div><div class="type '+cls+'">'+icon+' '+title+(sub?' — '+sub:'')+'</div>';
+ if(p){
+   html+='<div class="hosts"><div style="margin-bottom:7px">👥 Prowadzący:</div><div style="display:flex;justify-content:space-between;gap:4%">';
+   html+=selectHtml(a[0],false)+selectHtml(a[1],false)+'</div>';
+   html+='<div class="actions"><button class="save" onclick="saveHosts('+i+',this)">Zapisz</button><button class="cant" onclick="cantHost('+i+')">Nie mogę</button><button class="rem" onclick="remind('+i+')">'+(state.reminders[i]?"🔔 Przypomnienie ustawione":"🔔 Przypomnij")+'</button></div></div>';
+ } else if(icon==="🔵") html+='<div class="notice">LLSD – informacyjnie. Ten termin nie wymaga obsady PIF-PAF.</div>';
+ html+='</div>'; return html;
+}
+function render(){
+ const app=document.getElementById("app");
+ if(tab==="stats"){renderStats();return;}
+ if(tab==="rem"){renderRem();return;}
+ let h='';
+ if(tab==="mine"&&!me) h+='<div class="notice">Wybierz swoje imię, aby zobaczyć swoje dyżury.</div><div class="card"><select id="me" style="width:100%;padding:11px;background:#292929;color:#fff;border:1px solid #444;border-radius:8px"><option value="">— wybierz —</option>'+people.map(p=>'<option>'+p+'</option>').join("")+'</select></div>';
+ if(tab==="mine"&&me) h+='<div class="notice">Pokazuję dyżury dla <b>'+me+'</b>. Możesz zmienić osobę w zakładce „Mój dyżur”.</div>';
+ let current="";
+ schedule.forEach((x,i)=>{
+   if(x[1]==="🏆"){ if(tab==="all"){} }
+   if(x[1]==="⚪"||x[1]==="❌"||x[1]==="🏆"){
+     if(tab==="pif"||tab==="mine") return;
+   }
+   if(x[1]==="🔵"&&tab==="pif")return;
+   const m=x[0].slice(3,5); const mn=monthName(x[0]);
+   if(mn&&mn!==current){current=mn;h+='<div class="month">'+mn+'</div>';}
+   h+=renderCard(x,i);
+ });
+ if(!h)h='<div class="empty">Brak pozycji do pokazania.</div>';
+ app.innerHTML=h;
+ const meEl=document.getElementById("me");
+ if(meEl)meEl.onchange=()=>{me=meEl.value;localStorage.setItem("pifpaf_me",me);render();};
+}
+function saveHosts(i,btn){
+ const box=btn.closest(".hosts"), s=box.querySelectorAll("select");
+ const a=s[0].value,b=s[1].value;
+ if(!a||!b){alert("Wybierz dwóch prowadzących.");return;}
+ if(a===b){alert("Dwóch prowadzących musi być różne.");return;}
+ state.assign[i]=[a,b];saveState();render();
+}
+function cantHost(i){
+ const a=state.assign[i]||["",""];
+ if(!a[0]&&!a[1]){alert("Najpierw przypisz dwóch prowadzących.");return;}
+ let who=prompt("Kto nie może prowadzić? Wpisz dokładnie imię:\\n"+a.filter(Boolean).join(", "));
+ if(!who||!a.includes(who))return;
+ let other=a.find(x=>x&&x!==who);
+ let repl=prompt("Kto ma go zastąpić?\\nDostępni: "+people.filter(x=>x!==other&&x!==who).join(", "));
+ if(!repl||!people.includes(repl)||repl===other){alert("Nieprawidłowy zastępca.");return;}
+ state.assign[i]=a.map(x=>x===who?repl:x);saveState();render();
+}
+async function remind(i){
+ if(state.reminders[i]){
+   state.reminders[i]=false;saveState();render();return;
+ }
+ if(!("Notification" in window)){
+   alert("Ta przeglądarka nie obsługuje powiadomień.");
+   return;
+ }
+ if(Notification.permission==="default"){
+   const p=await Notification.requestPermission();
+   if(p!=="granted"){alert("Nie udzielono zgody na powiadomienia.");return;}
+ }
+ if(Notification.permission!=="granted"){
+   alert("Włącz powiadomienia dla tej strony/aplikacji w ustawieniach przeglądarki.");
+   return;
+ }
+ state.reminders[i]=true;saveState();
+ alert("Przypomnienie ustawione. Aplikacja sprawdza terminy i wyświetla powiadomienie 24 godziny oraz 2 godziny przed turniejem, gdy aplikacja/PWA może wykonywać sprawdzanie.");
+ render();
+}
+function renderStats(){
+ const counts={};people.forEach(p=>counts[p]=0);
+ Object.values(state.assign).forEach(a=>a.forEach(p=>{if(p)counts[p]++;}));
+ let h='<div class="month">📊 STATYSTYKI PROWADZĄCYCH</div>';
+ people.forEach(p=>h+='<div class="stat"><div class="row"><span>'+p+'</span><b>'+counts[p]+' dyżurów</b></div></div>');
+ h+='<div class="notice">Łącznie obsadzonych miejsc: '+Object.values(counts).reduce((a,b)=>a+b,0)+' / 40</div>';
+ document.getElementById("app").innerHTML=h;
+}
+function renderRem(){
+ let ids=Object.keys(state.reminders).filter(i=>state.reminders[i]);
+ let h='<div class="month">🔔 PRZYPOMNIENIA</div>';
+ if(!ids.length){h+='<div class="empty">Nie masz jeszcze ustawionych przypomnień.</div>';}
+ ids.forEach(i=>{const x=schedule[i];h+='<div class="card"><b>'+x[0]+'</b><div class="type red">'+x[1]+' '+x[2]+'</div><div style="margin-top:5px">'+x[3]+'</div><div class="actions"><button class="rem" onclick="remind('+i+')">Wyłącz przypomnienie</button></div></div>';});
+ h+='<div class="notice">Przypomnienia są zapisane lokalnie w tej przeglądarce na Twoim telefonie.</div>';
+ document.getElementById("app").innerHTML=h;
+}
+
+async function registerSW(){
+ try{
+   if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
+     await navigator.serviceWorker.register("./sw.js");
+   }
+ }catch(e){console.log("SW:",e);}
+}
+function parseDate(d){
+ const m=d.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+ if(!m)return null;
+ return new Date(Number(m[3]),Number(m[2])-1,Number(m[1]),19,0,0,0);
+}
+function checkReminders(){
+ const now=Date.now();
+ Object.keys(state.reminders).forEach(k=>{
+   if(!state.reminders[k])return;
+   const x=schedule[Number(k)], dt=parseDate(x[0]);
+   if(!dt)return;
+   [24*60,120].forEach(min=>{
+     const fire=dt.getTime()-min*60000;
+     const marker="sent_"+k+"_"+min;
+     if(now>=fire && now<fire+20*60000 && !localStorage.getItem(marker)){
+       if("Notification" in window && Notification.permission==="granted"){
+         new Notification("🎯 PIF-PAF LASS",{
+           body:x[0]+" o 19:00 — "+x[2]+(x[3]?" — "+x[3]:""),
+           tag:"pifpaf-"+k+"-"+min
+         });
+         localStorage.setItem(marker,"1");
+       }
+     }
+   });
+ });
+}
+registerSW();
+checkReminders();
+setInterval(checkReminders,60000);
+
+document.querySelectorAll("#nav button").forEach(b=>b.onclick=()=>{tab=b.dataset.tab;document.querySelectorAll("#nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");render();});
+document.querySelector('#nav button[data-tab="all"]').classList.add("active");
+render();
+</script>
+</body>
+</html>
